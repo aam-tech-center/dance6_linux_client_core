@@ -1,4 +1,4 @@
-/*
+﻿/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -14,8 +14,18 @@
 #ifndef MEMPOOL_H
 #define MEMPOOL_H
 
+//#define WINDOWS
+#define LINUX
+
+#ifdef WINDOWS
+#include <windows.h>
+#endif
+
+#ifdef LINUX
 #include <pthread.h>
 #include <bits/pthreadtypes.h>
+#endif
+
 #include <list>
 using namespace std;
 
@@ -29,7 +39,13 @@ using namespace std;
 
 struct Locker
 {
+#ifdef WINDOWS
+	CRITICAL_SECTION _mutex;
+#endif
+
+#ifdef LINUX
     pthread_mutex_t _mutex;
+#endif
     
     Locker();    
     ~Locker();    
@@ -128,6 +144,11 @@ struct MemPool
     
     void release(T* t)
     {
+        if( t == NULL )
+        {
+            return;
+        }
+        
         T* _t = t;
         
         ////////        

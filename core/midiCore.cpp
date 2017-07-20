@@ -1,4 +1,4 @@
-/*
+﻿/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -100,23 +100,27 @@ char* NoteToString(MIDI_BYTE bNote)
 ////////
 const char* MIDI_EVENT_NOTE::getNoteName()
 {
-    const char* _notename = NoteToString(_bNode);
-    
+    const char* _notename = NoteToString(_bNote);    
     return _notename;
 }
 
 MIDI_TRACK::~MIDI_TRACK()
 {
-    for( unsigned int i=0; i<_trackArray.size(); i++ )
+    for( unsigned int i=0; i<_eventArray.size(); i++ )
     { 
-        MIDI_EVENT*& _me = _trackArray[i];
+        MIDI_EVENT*& _me = _eventArray[i];
                     
         if( _me )        
         {        
             delete _me;            
-            _trackArray[i] = NULL;            
+            _eventArray[i] = NULL;            
         }        
     }      
+}
+
+void MIDI_TRACK::push_back(MIDI_EVENT* event)
+{
+    _eventArray.push_back(event);
 }
 
 ////////
@@ -562,10 +566,10 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     _me->_channel = _chanel;
                     _me->_event   = EME_CLOSENOTE;
                     
-                    _me->_bNode   = bNote;
+                    _me->_bNote   = bNote;
                     _me->_bVel    = bVal;
                     
-                    _miditrack->_trackArray.push_back(_me);
+                    _miditrack->push_back(_me);
                 }
                 else
                 {
@@ -594,10 +598,10 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     _me->_channel = _chanel;
                     _me->_event   = EME_OPENNOTE;
                     
-                    _me->_bNode   = bNote;
+                    _me->_bNote   = bNote;
                     _me->_bVel    = bVal;
                     
-                    _miditrack->_trackArray.push_back(_me);
+                    _miditrack->push_back(_me);
                 }
                 else
                 {
@@ -627,10 +631,10 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     _me->_channel = _chanel;
                     _me->_event   = EME_TOUCHBOARD;
                     
-                    _me->_bNode   = bNote;
+                    _me->_bNote   = bNote;
                     _me->_bVel    = bVal;
                     
-                    _miditrack->_trackArray.push_back(_me);
+                    _miditrack->push_back(_me);
                 }
                 else
                 {
@@ -662,7 +666,7 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     _me->_bReg    = bReg;
                     _me->_bVal    = bVal;
                     
-                    _miditrack->_trackArray.push_back(_me);
+                    _miditrack->push_back(_me);
                 }
                 else
                 {
@@ -690,7 +694,7 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     
                     _me->_instrument = _bInstrument;
                     
-                    _miditrack->_trackArray.push_back(_me);
+                    _miditrack->push_back(_me);
                 }
                 else
                 {
@@ -718,7 +722,7 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     
                     _me->_channel = bChannel;
                     
-                    _miditrack->_trackArray.push_back(_me);
+                    _miditrack->push_back(_me);
                 }
                 else
                 {
@@ -747,7 +751,7 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     
                     _me->_glide = wPitch;
                     
-                    _miditrack->_trackArray.push_back(_me);
+                    _miditrack->push_back(_me);
                     
                 }
                 else
@@ -761,7 +765,7 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
             case MIDI_ENT_META:
             {
                 MIDI_EVENT_META* _me = CREATE_OBJECT<MIDI_EVENT_META>();
-                _miditrack->_trackArray.push_back(_me);
+                _miditrack->push_back(_me);
                 
                 _me->_delay   = _delay;                                    
                 _me->_channel = _chanel;                
@@ -777,6 +781,10 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
                     size_t CurrentPos;
                 
                     bType  = _point.value();       
+                    
+                    ////////
+                    _me->_meta._status = (ENUM_MIDI_META_STATUS)bType;
+
                                         
                     if( _point.next() )
                     {
@@ -858,7 +866,7 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
     
 TRACK_END:    
     
-    DEBUG_REPORT("TRACK LENGTH:" << _miditrack->_trackArray.size());
+    DEBUG_REPORT("TRACK LENGTH:" << _miditrack->_eventArray.size());
 }
 
 void stdoutMetaName( const char* _title, MIDI_BYTE* _p, unsigned long _len )
@@ -1010,7 +1018,7 @@ void midiCore::processMeta(point_ctrl* _point, int _trackIndex, unsigned char _m
 
 int midiCore::getTrackCount()
 {
-    return m_tickcount;
+    return m_tracks;
 };
 
 unsigned long midiCore::getTrackLength(int index)
@@ -1021,7 +1029,7 @@ unsigned long midiCore::getTrackLength(int index)
     
     if( _track )
     {
-        _count = _track->_trackArray.size();
+        _count = _track->_eventArray.size();
     }
     
     return _count;
@@ -1039,8 +1047,119 @@ MIDI_TRACK* midiCore::getTrack(int index)
     return _track;
 };
 
+////////////////
+MidiSystem::MidiSystem():
+m_nodeAlloc(4096)            
+{
+    
+}
 
+MidiSystem::~MidiSystem()
+{
+    
+}
 
+MIDI_NODE* MidiSystem::createNode()
+{
+    MIDI_NODE* _node = m_nodeAlloc.create();
+    memset(_node, 0, sizeof(MIDI_NODE));
+
+	return _node;
+}
+
+void MidiSystem::pushEventToNode(MIDI_NODE*& node, MIDI_EVENT*& event)
+{
+    for( int i=0; i<MAX_MIDI_EVENT_IN_NODE; i++ )
+    {
+        if( node->_event[i] == NULL )
+        {
+            node->_event[i] = event;
+            break;
+        }
+    }
+}
+
+bool MidiSystem::processTrack(MIDI_TRACK* track)
+{
+    if( !track )
+    {
+        return false;
+    }
+    
+    bool check = false;
+    
+    MIDI_EVENT_ARRAY& _eventArray = track->_eventArray;
+    
+    if( _eventArray.size() > 0 )
+    {
+        MIDI_NODE* _node = createNode();        
+        m_nodeArray.push_back(_node);
+
+        for( int i=0; i<_eventArray.size(); i++ )
+        {            
+            ////////
+            MIDI_EVENT* evt = _eventArray[i];
+
+            if( evt->_delay == 0 || i == 0 )
+            {
+                pushEventToNode(_node, evt);
+            }
+            else
+            {
+                _node = createNode();
+                m_nodeArray.push_back(_node);
+                _node->_delay = evt->_delay;
+                
+                pushEventToNode(_node, evt);                
+            }
+            
+            if( evt->_event == EME_META )
+            {
+                MIDI_EVENT_META* _pmem = (MIDI_EVENT_META*)evt;
+                
+                if( _pmem->_meta._status == EMMS_TRACKEND )
+                {
+                    check = true;
+                    break;
+                }
+            }
+        }
+        
+    }
+    
+    if( !check )
+    {
+        DEBUG_REPORT("PROCESS FAILED");
+
+        clean();
+    }
+    else
+    {
+        DEBUG_REPORT("PROCESS SUCCESS");
+    }
+    
+    return check;
+}
+
+void MidiSystem::clean()
+{
+    for( int i=0; i<m_nodeArray.size(); i++ )
+    {
+        MIDI_NODE* _node = m_nodeArray[i];
+        
+        if( _node )
+        {
+            m_nodeAlloc.release(_node);
+        }        
+    }
+    
+    m_nodeArray.clear();
+}
+
+MIDI_NODE_ARRAY& MidiSystem::getList()
+{
+	return m_nodeArray;
+}
 
 
 

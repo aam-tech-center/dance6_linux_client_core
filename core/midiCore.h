@@ -1,4 +1,4 @@
-/*
+﻿/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -23,6 +23,8 @@
 #include <list>
 using namespace std;
 
+#include "memPool.h"
+
 ////////
 #ifndef MIDI_BYTE
 #define MIDI_BYTE unsigned char
@@ -31,6 +33,7 @@ using namespace std;
 ////////
 enum ENUM_MIDI_EVENT
 {
+    ////////
     EME_CLOSENOTE = 0,
     EME_OPENNOTE,
     EME_TOUCHBOARD,
@@ -39,6 +42,9 @@ enum ENUM_MIDI_EVENT
     EME_CHANNELCTRL,
     EME_GLIDE,
     EME_META,    
+    
+    ////////
+    EME_UNKNOWN,
 };
 
 enum ENUM_MIDI_META_STATUS
@@ -77,13 +83,15 @@ struct MIDI_EVENT
 };
 
 typedef std::vector<MIDI_EVENT*> MIDI_EVENT_ARRAY;
-#define MAX_MIDI_TRACK 32
+#define MAX_MIDI_TRACK 1024
 
 ////////
 struct MIDI_TRACK
 {
-    MIDI_EVENT_ARRAY _trackArray;        
+    MIDI_EVENT_ARRAY _eventArray;        
+    
     ~MIDI_TRACK();
+    void push_back(MIDI_EVENT* event);
 };
 
 
@@ -91,7 +99,7 @@ struct MIDI_TRACK
 struct MIDI_EVENT_NOTE:
 public MIDI_EVENT
 {
-    MIDI_BYTE _bNode; //按键
+    MIDI_BYTE _bNote; //按键
     MIDI_BYTE _bVel;  //力度
     
     const char* getNoteName();    
@@ -135,6 +143,7 @@ public MIDI_EVENT
 class MIDI_BUFF;
 class point_ctrl;
 
+////////
 class midiCore 
 {
 protected:
@@ -168,6 +177,37 @@ public:
     
 private:
 
+};
+
+////dispatch track to nodelist
+#define MAX_MIDI_EVENT_IN_NODE 16
+struct MIDI_NODE
+{
+    int         _delay;
+    MIDI_EVENT* _event[MAX_MIDI_EVENT_IN_NODE];
+};
+
+typedef std::vector<MIDI_NODE*> MIDI_NODE_ARRAY;
+
+////////
+class MidiSystem
+{
+protected:
+    MemPool<MIDI_NODE>  m_nodeAlloc;
+    
+    MIDI_NODE_ARRAY     m_nodeArray;
+    MIDI_NODE*  createNode();
+    void pushEventToNode(MIDI_NODE*& node, MIDI_EVENT*& event);
+    
+public:
+    
+    MidiSystem();
+    ~MidiSystem();
+    
+    bool processTrack(MIDI_TRACK* track);  
+    void clean();
+
+	MIDI_NODE_ARRAY& getList();
 };
 
 #endif /* MIDICORE_H */
