@@ -526,6 +526,11 @@ void midiCore::processTrack(MIDI_BUFF* _BUFF, unsigned long long _buffsize, int 
         _event  = _eValue & 0xF0;      
         _chanel = _eValue & 0x0F;
         
+        if( _chanel > 15 )
+        {
+            DEBUG_REPORT("******exception channel:"<<(int)_chanel<<"******");
+        }
+        
         if( _event >= 0x00 && _event <= 0x7F )
         {
             const MIDI_BYTE* _byte = _point.point();            
