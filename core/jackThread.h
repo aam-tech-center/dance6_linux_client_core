@@ -14,8 +14,18 @@
 #ifndef JACKTHREAD_H
 #define JACKTHREAD_H
 
-#include <pthread.h>
 #include <functional>
+
+//#define __LINUX
+#define __C11
+
+#ifdef __LINUX
+#include <pthread.h>
+#endif
+
+#ifdef __C11
+#include <thread>
+#endif
 
 typedef std::function<void(void)> JACK_FUNC_THREAD;
 
@@ -25,15 +35,23 @@ protected:
     JACK_FUNC_THREAD        m_funcProcess;
     JACK_FUNC_THREAD        m_funcEnd;
     
+#ifdef __LINUX
     pthread_t               m_threadID;
+    friend void* func_thread(void* arg);
+
+#endif
+    
+#ifdef __C11
+    std::thread*            m_thread;
+    void func_thread();
+#endif
+    
     int                     m_thread_status;
 
     
     virtual void process();
     void end();
-    
-    friend void* func_thread(void* arg);
-    
+        
 public:
     
     JackThread(JACK_FUNC_THREAD _fProcess, JACK_FUNC_THREAD _fEnd);
@@ -50,7 +68,14 @@ class JackThreadCys:public JackThread
 protected:    
     
     virtual void process();
+    
+#ifdef __LINUX
     friend void* func_cys_thread(void* arg);
+#endif
+    
+#ifdef __C11
+    void func_cys_thread();
+#endif
     
 public:
     JackThreadCys(JACK_FUNC_THREAD _fProcess = NULL, JACK_FUNC_THREAD _fEnd = NULL);

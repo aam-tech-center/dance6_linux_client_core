@@ -14,16 +14,22 @@
 #ifndef MEMPOOL_H
 #define MEMPOOL_H
 
-//#define WINDOWS
-#define LINUX
+//#define __WINDOWS
+//#define __LINUX
+#define __C11
 
 #ifdef WINDOWS
 #include <windows.h>
 #endif
 
-#ifdef LINUX
+#ifdef __LINUX
 #include <pthread.h>
 #include <bits/pthreadtypes.h>
+#endif
+
+#ifdef __C11
+#include <thread>
+#include <mutex>
 #endif
 
 #include <list>
@@ -39,12 +45,16 @@ using namespace std;
 
 struct Locker
 {
-#ifdef WINDOWS
-	CRITICAL_SECTION _mutex;
+#ifdef __WINDOWS	
+    CRITICAL_SECTION _mutex;
 #endif
 
-#ifdef LINUX
-    pthread_mutex_t _mutex;
+#ifdef __LINUX
+    pthread_mutex_t  _mutex;
+#endif
+    
+#ifdef __C11
+    std::mutex       _mutex;
 #endif
     
     Locker();    

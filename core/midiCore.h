@@ -175,6 +175,9 @@ public:
     void endLoad();
     void process();
     
+    int getSyncType();
+    int getTotalTickCount();
+    
 private:
 
 };

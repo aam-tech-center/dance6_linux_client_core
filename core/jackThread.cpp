@@ -21,12 +21,22 @@
 int THREAD_COUNT = 0;
 
 ////////////////
+#ifdef __LINUX
 void* func_thread(void* arg)
 {
     JackThread* _thread = (JackThread*)arg;
     _thread->process();
     _thread->end();
 }
+#endif
+
+#ifdef __C11
+void JackThread::func_thread()
+{
+    process();
+    end();
+}
+#endif
 
 JackThread::JackThread(JACK_FUNC_THREAD _fProcess, JACK_FUNC_THREAD _fEnd)
 {
@@ -49,14 +59,29 @@ void JackThread::begin()
 {
     m_thread_status = 0;
     
+#ifdef __LINUX
+    
     pthread_create(
             &m_threadID,
             NULL,
             &func_thread,
             this
         );
+
+#endif
+    
+#ifdef __C11
+    
+    std::thread _thread(&JackThread::func_thread, this);
+    _thread.detach();
+    //_thread.join();
+    m_thread = &_thread;
+    
+#endif
     
     THREAD_COUNT += 1;
+    
+    
 }
 
 void JackThread::process()
@@ -86,12 +111,22 @@ void JackThread::end()
 }
 
 ////////////////
+#ifdef __LINUX
 void* func_cys_thread(void* arg)
 {
     JackThreadCys* _thread = (JackThreadCys*)arg;
     _thread->process();
     _thread->end();
 }
+#endif
+
+#ifdef __C11
+void JackThreadCys::func_cys_thread()
+{
+    process();
+    end();
+}
+#endif
 
 JackThreadCys::JackThreadCys(JACK_FUNC_THREAD _fProcess, JACK_FUNC_THREAD _fEnd):
 JackThread::JackThread( _fProcess, _fEnd )
@@ -105,15 +140,27 @@ JackThreadCys::~JackThreadCys()
 }
 
 void JackThreadCys::begin()
-{
+{        
     m_thread_status = 0;
-            
+    
+#ifdef __LINUX
+    
     pthread_create(
             &m_threadID,
             NULL,
             &func_cys_thread,
             this
         );
+#endif    
+    
+#ifdef __C11
+    
+    std::thread _thread(&JackThreadCys::func_cys_thread, this);
+    //_thread.join();
+    _thread.detach();
+    m_thread = &_thread;
+    
+#endif
 
     THREAD_COUNT += 1;    
     

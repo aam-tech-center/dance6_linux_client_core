@@ -309,6 +309,17 @@ bool compare_header_string4(const MIDI_BYTE _str1[4], const MIDI_BYTE _str2[4])
     return _check;
 }
 
+int midiCore::getSyncType()
+{
+    return (int)m_type;
+};
+
+int midiCore::getTotalTickCount()
+{
+    return (int)m_tickcount;
+};
+
+
 bool midiCore::load(const char* _filePath)
 {
     bool _check = false;
