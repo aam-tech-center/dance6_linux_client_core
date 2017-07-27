@@ -209,8 +209,8 @@ public:
     
     bool processTrack(MIDI_TRACK* track);  
     void clean();
-
-	MIDI_NODE_ARRAY& getList();
+	
+    MIDI_NODE_ARRAY& getList();
 };
 
 #endif /* MIDICORE_H */
