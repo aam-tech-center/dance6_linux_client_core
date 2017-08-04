@@ -1103,6 +1103,7 @@ bool MidiSystem::processTrack(MIDI_TRACK* track)
     }
     
     bool check = false;
+    m_maxEvent = 0;
     
     MIDI_EVENT_ARRAY& _eventArray = track->_eventArray;
     
@@ -1110,6 +1111,7 @@ bool MidiSystem::processTrack(MIDI_TRACK* track)
     {
         MIDI_NODE* _node = createNode();        
         m_nodeArray.push_back(_node);
+        int _eventindex = 0;
 
         for( int i=0; i<_eventArray.size(); i++ )
         {            
@@ -1119,14 +1121,23 @@ bool MidiSystem::processTrack(MIDI_TRACK* track)
             if( evt->_delay == 0 || i == 0 )
             {
                 pushEventToNode(_node, evt);
+                _eventindex += 1;
             }
             else
-            {
+            {                
                 _node = createNode();
                 m_nodeArray.push_back(_node);
+                _eventindex = 0;
+                
                 _node->_delay = evt->_delay;
                 
                 pushEventToNode(_node, evt);                
+                _eventindex += 1;
+            }
+            
+            if( m_maxEvent < _eventindex )
+            {
+                m_maxEvent = _eventindex;
             }
             
             if( evt->_event == EME_META )
@@ -1177,10 +1188,189 @@ MIDI_NODE_ARRAY& MidiSystem::getList()
 	return m_nodeArray;
 }
 
+////////
+bool checkCloseNote(MIDI_BYTE _bnote, MIDI_NODE* _node)
+{
+    bool _check = false;
+    
+    for( int j=0; j<MAX_MIDI_EVENT_IN_NODE; j++ )
+    {
+        MIDI_EVENT* _event = _node->_event[j];
+            
+        if( _event != NULL && _event->_event == EME_CLOSENOTE )
+        {
+            MIDI_EVENT_NOTE* _pmeo = (MIDI_EVENT_NOTE*)_event;                         
+            const MIDI_BYTE _bNote = _pmeo->_bNote;
+
+            if( _bNote == _bnote )
+            {
+                _check = true;
+                break;                
+            }            
+        }
+    }
+    
+    return _check;
+}
+
+bool checkOpenNote(MIDI_NODE* _node)
+{
+        bool _check = false;
+    
+    for( int j=0; j<MAX_MIDI_EVENT_IN_NODE; j++ )
+    {
+        MIDI_EVENT* _event = _node->_event[j];
+            
+        if( _event != NULL && _event->_event == EME_OPENNOTE )
+        {
+            _check = true;
+            break;          
+        }
+    }
+    
+    return _check;
+}
+
+////////
+MidiNoteSystem::MidiNoteSystem(MIDI_NODE_ARRAY& _array):
+m_noteAlloc(4096),
+m_noteNodeAlloc(1024)        
+{
+    ////////    
+    NOTE_ARRAY _noteArray;   
+    
+    ////////
+    unsigned int _tickCount = 0;
+    for( int i=0; i<_array.size(); i++ )
+    {
+        MIDI_NODE* _node = _array[i];
+        
+        _tickCount += _node->_delay;
+        
+        for( int j=0; j<MAX_MIDI_EVENT_IN_NODE; j++ )
+        {
+            MIDI_EVENT* _event = _node->_event[j];
+            
+            if( _event != NULL && _event->_event == EME_OPENNOTE )
+            {
+                MIDI_EVENT_NOTE* _pmeo = (MIDI_EVENT_NOTE*)_event;                
+                const MIDI_BYTE _bNote = _pmeo->_bNote;
+                
+                //find close
+                unsigned int _tickLast  = 0;
+                //unsigned int _tickLastCount = 0;
+                for( int k=i+1; k<_array.size() - i - 1 ;k++ )
+                {
+                    MIDI_NODE* _nextNode = _array[k];
+                    _tickLast += _nextNode->_delay;
+                    //_tickLastCount = _tickLast;
+                    
+                    if( 
+                            checkCloseNote(_bNote, _nextNode) 
+                            //checkOpenNote(_nextNode)
+                      )
+                    {                                
+                        break;
+                    }                    
+                }
+                
+                if( _tickLast == 0 && i < _array.size() )
+                {
+                    MIDI_NODE* _nextNode = _array[i+1];
+                    _tickLast = _nextNode->_delay;
+                }
+                
+                ////push data
+                {   
+                    NOTE* _nNote = m_noteAlloc.create();
+                    
+                    _nNote->_bNote = _bNote;
+                    _nNote->_bVel  = _pmeo->_bVel;
+                    _nNote->_start = _tickCount;
+                    _nNote->_end   = _tickCount + _tickLast;
+                    _nNote->_last  = _tickLast;                 
+                    //_nNote->_tickcount = _tickLastCount;
+                    
+                    _noteArray.push_back(_nNote);
+
+                }                
+            }
+        }        
+    }    
 
 
+    DEBUG_REPORT("****** note count :"<< _noteArray.size() << "******" << std::endl);
+            
+    ////////       
+    unsigned long _tickIndex = 0xFFFFFFFF;
+    NOTE_NODE* _midiNote = NULL;
+    int _midiNoteIndex = 0;
+        
+    for( int i=0; i< _noteArray.size(); i++ )
+    {
+        NOTE* _note = _noteArray[i];
+         
+        if( _tickIndex != _note->_start )
+        {
+            _tickIndex = _note->_start;
+                
+            _midiNote = m_noteNodeAlloc.create();
+            m_noteNodeArray.push_back( _midiNote );
+                
+            _midiNoteIndex = 0;
+        }
+            
+        _midiNote->_note[_midiNoteIndex++] = _note;
+    } 
+    
+}
 
 
+MidiNoteSystem::~MidiNoteSystem()
+{
+    
+}
 
+MidiNoteSystem::NOTE_NODE_ARRAY& MidiNoteSystem::getNoteArray()
+{
+    return m_noteNodeArray;
+}
 
+ENUM_MIDI_VOICE_HEIGHT MidiNoteSystem::NOTE::getHeight()
+{
+    int _noteValue = (int)_bNote;
+    
+    ENUM_MIDI_VOICE_HEIGHT _emvh = (ENUM_MIDI_VOICE_HEIGHT)(_noteValue % 12);
+    return _emvh;
+}
+
+const char* MidiNoteSystem::NOTE::getHeightName()
+{
+    const char* _heightName[] =
+    {
+        "C",
+        "C#",
+        "D",
+        "D#",
+        "E",
+        "F",
+        "F#",
+        "G",
+        "G#",
+        "A",
+        "A#",
+        "B"
+    };
+    
+    return _heightName[getHeight()];    
+}
+
+int MidiNoteSystem::NOTE::getLevel()
+{
+    int _noteValue = (int)_bNote;
+    
+    int _result = (int)(_noteValue / 12);
+    
+    return _result;
+}
 

@@ -20,6 +20,7 @@ enum ENUM_PROGRAM_TYPE
 {
     EPT_SINGLE_COLOR = 0,
     EPT_BW_COLOR,
+    EPT_TEXSCOMPLEX,
     
     EPT_COUNT,
 };

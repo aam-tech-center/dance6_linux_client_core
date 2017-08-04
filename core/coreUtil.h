@@ -48,7 +48,9 @@ namespace Core
     std::string getCurrentPath();
     std::string getWritablePath();
 
-    
+    //create texture
+    cocos2d::Texture2D* createTextureFromFile(std::string _path);
+    int createTextureHandleFromFile(std::string _path);
 };
 
 

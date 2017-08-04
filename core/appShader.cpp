@@ -36,7 +36,7 @@ void appShader::init()
     
     addProgram(EPT_SINGLE_COLOR, "sampler.vsh", "sampler.fsh");
     addProgram(EPT_BW_COLOR, "sampler.vsh", "bwColor.fsh");
-      
+    addProgram(EPT_TEXSCOMPLEX, "sampler.vsh", "texscomplex.fsh");  
 
     
 }
@@ -65,6 +65,8 @@ void appShader::addProgram(ENUM_PROGRAM_TYPE _type, const char* _vsh, const char
     );
     
     pGp->link();
+    pGp->updateUniforms();
+    //pGp->setUniformsForBuiltins();
     
     m_programs[_type] = pGp;
     

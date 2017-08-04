@@ -68,6 +68,22 @@ enum ENUM_MIDI_META_STATUS
     EMMS_UNKNOWN     = 0xFF,
 };
 
+enum ENUM_MIDI_VOICE_HEIGHT
+{
+    EMVH_C = 0,
+    EMVH_Cx,
+    EMVH_D,
+    EMVH_Dx,
+    EMVH_E,
+    EMVH_F,
+    EMVH_Fx,
+    EMVH_G,
+    EMVH_Gx,
+    EMVH_A,
+    EMVH_Ax,
+    EMVN_B            
+};
+
 ////////
 struct MIDI_META
 {
@@ -196,9 +212,10 @@ typedef std::vector<MIDI_NODE*> MIDI_NODE_ARRAY;
 class MidiSystem
 {
 protected:
-    MemPool<MIDI_NODE>  m_nodeAlloc;
-    
+    MemPool<MIDI_NODE>  m_nodeAlloc;    
     MIDI_NODE_ARRAY     m_nodeArray;
+    int                 m_maxEvent;    
+    
     MIDI_NODE*  createNode();
     void pushEventToNode(MIDI_NODE*& node, MIDI_EVENT*& event);
     
@@ -209,8 +226,54 @@ public:
     
     bool processTrack(MIDI_TRACK* track);  
     void clean();
+    
+    int  getMaxEvent();
 	
     MIDI_NODE_ARRAY& getList();
+};
+
+////////
+class MidiNoteSystem
+{
+public:
+    struct NOTE
+    {            
+        unsigned int _start;
+        unsigned int _end;
+        unsigned int _last;
+                
+        MIDI_BYTE _bNote; //按键
+        MIDI_BYTE _bVel;  //力度     
+        
+        ENUM_MIDI_VOICE_HEIGHT getHeight();
+        const char* getHeightName();
+        int getLevel();
+    };
+    
+    struct NOTE_NODE
+    {
+        NOTE* _note[MAX_MIDI_EVENT_IN_NODE];
+    };
+    
+    typedef MemPool<NOTE>           NOTE_ALLOC;
+    typedef MemPool<NOTE_NODE>      NOTE_NODE_ALLOC;
+    
+    typedef std::vector<NOTE*>      NOTE_ARRAY;
+    typedef std::vector<NOTE_NODE*> NOTE_NODE_ARRAY;
+    
+protected:
+    NOTE_ALLOC      m_noteAlloc;
+    NOTE_NODE_ALLOC m_noteNodeAlloc;
+    
+    NOTE_NODE_ARRAY m_noteNodeArray;
+    
+public:
+    
+    MidiNoteSystem(MIDI_NODE_ARRAY& _array);
+    ~MidiNoteSystem();
+    
+    NOTE_NODE_ARRAY& getNoteArray();
+    
 };
 
 #endif /* MIDICORE_H */

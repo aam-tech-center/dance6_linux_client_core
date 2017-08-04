@@ -107,6 +107,25 @@ namespace Core
         return FileUtils::getInstance()->getWritablePath();
     };
     
+    ////////
+    Texture2D* createTextureFromFile(std::string _path)
+    {
+        Texture2D* _tex =                                
+        TextureCache::getInstance()->addImage(_path);
+        
+        return _tex;
+    };
+    
+    ////////
+    int createTextureHandleFromFile(std::string _path)
+    {
+        int _handle = -1;
+        
+        
+        
+        return _handle;
+    };
+    
 };
 
 
