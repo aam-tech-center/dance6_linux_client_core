@@ -984,6 +984,10 @@ void midiCore::processMeta(point_ctrl* _point, int _trackIndex, unsigned char _m
             
             DEBUG_REPORT("MIDI_META_SPEED"<<" v1:"<<(int)v1<<" v2:"<<(int)v2<<" v3:"<<(int)v3);
             
+            m_metaSpeedDefault[0] = v1;
+            m_metaSpeedDefault[1] = v2;
+            m_metaSpeedDefault[2] = v3;
+            
             break;
         }
         case MIDI_META_BEAT:
@@ -1008,6 +1012,11 @@ void midiCore::processMeta(point_ctrl* _point, int _trackIndex, unsigned char _m
                     <<(int)bMetronomeTimer<<","
                     <<(int)bNb32ndNotesInCrotchet);
             
+            m_metaBeatDefault[0] = bBeatNumerator;
+            m_metaBeatDefault[1] = bBeatDenominator;
+            m_metaBeatDefault[2] = bMetronomeTimer;
+            m_metaBeatDefault[3] = bNb32ndNotesInCrotchet;
+            
             break;
         }
         case MIDI_META_TUNE:
@@ -1030,6 +1039,16 @@ void midiCore::processMeta(point_ctrl* _point, int _trackIndex, unsigned char _m
             break;
         }
     }
+}
+
+int* midiCore::getMetaSpeedDefault()
+{
+    return m_metaSpeedDefault;
+}
+
+int* midiCore::getMetaBeatDefault()
+{
+    return m_metaBeatDefault;
 }
 
 int midiCore::getTrackCount()

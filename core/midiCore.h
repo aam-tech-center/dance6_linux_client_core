@@ -169,6 +169,9 @@ protected:
     unsigned short m_tracks;
     unsigned short m_tickcount;
     
+    int            m_metaSpeedDefault[3];
+    int            m_metaBeatDefault[4];
+    
     ifstream       m_file;
     
     ////////
@@ -193,6 +196,9 @@ public:
     
     int getSyncType();
     int getTotalTickCount();
+    
+    int* getMetaSpeedDefault();
+    int* getMetaBeatDefault();
     
 private:
 
