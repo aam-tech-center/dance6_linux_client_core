@@ -1241,6 +1241,8 @@ m_noteNodeAlloc(1024)
     
     ////////
     unsigned int _tickCount = 0;
+    int _minTick = -1;
+    
     for( int i=0; i<_array.size(); i++ )
     {
         MIDI_NODE* _node = _array[i];
@@ -1289,7 +1291,20 @@ m_noteNodeAlloc(1024)
                     _nNote->_start = _tickCount;
                     _nNote->_end   = _tickCount + _tickLast;
                     _nNote->_last  = _tickLast;                 
-                    //_nNote->_tickcount = _tickLastCount;
+                    _nNote->_minBeat = &m_minTick;                    
+                    
+                    float __tl = _tickLast;
+                    __tl = __tl / 30.0f;
+                    _nNote->_beat = (int)(__tl + 0.5f) * 30;
+                    
+                    if( _minTick == -1 )
+                    {
+                        _minTick = _nNote->_beat;
+                    }
+                    else if( _minTick > _nNote->_beat )
+                    {
+                        _minTick = _nNote->_beat;
+                    }
                     
                     _noteArray.push_back(_nNote);
 
@@ -1298,7 +1313,7 @@ m_noteNodeAlloc(1024)
         }        
     }    
 
-
+    m_minTick = _minTick;
     DEBUG_REPORT("****** note count :"<< _noteArray.size() << "******" << std::endl);
             
     ////////       
@@ -1376,3 +1391,7 @@ int MidiNoteSystem::NOTE::getLevel()
     return _result;
 }
 
+int MidiNoteSystem::NOTE::getBeatPercent()
+{
+    return _beat / (*_minBeat);
+}

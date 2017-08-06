@@ -238,9 +238,12 @@ class MidiNoteSystem
 public:
     struct NOTE
     {            
-        unsigned int _start;
-        unsigned int _end;
-        unsigned int _last;
+        unsigned int  _start;
+        unsigned int  _end;
+        unsigned int  _last;
+        unsigned int  _beat;
+        
+        unsigned int* _minBeat;
                 
         MIDI_BYTE _bNote; //按键
         MIDI_BYTE _bVel;  //力度     
@@ -248,6 +251,7 @@ public:
         ENUM_MIDI_VOICE_HEIGHT getHeight();
         const char* getHeightName();
         int getLevel();
+        int getBeatPercent();
     };
     
     struct NOTE_NODE
@@ -260,6 +264,8 @@ public:
     
     typedef std::vector<NOTE*>      NOTE_ARRAY;
     typedef std::vector<NOTE_NODE*> NOTE_NODE_ARRAY;
+    
+    unsigned int                    m_minTick;
     
 protected:
     NOTE_ALLOC      m_noteAlloc;
