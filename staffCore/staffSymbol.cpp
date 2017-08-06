@@ -73,7 +73,6 @@ void staffSymbol::initSymbol(float _width, float _height, bool _solid)
     _renderTex->retain();
     
     this->setAnchorPoint(Vec2(1.0f, 0.5f));
-    //this->setScale(0.5f);
     
     ////////
     this->setColor(Color3B(8,8,8));
@@ -151,11 +150,73 @@ void staffSymbol::initSymbol(float _width, float _height, bool _solid, float _vl
     float _anchorY = (_vline>=0.0)? (_height/2.0)/(_height + _vline) : (_height/2.0 + abs(_vline))/(_height + abs(_vline));   
     
     this->setAnchorPoint(Vec2(1.0f, _anchorY));
-    this->setColor(Color3B(8,8,8));
-    
-    //this->setScale(0.5f);
+    this->setColor(Color3B(8,8,8));    
 }
 
+////////
+void staffSymbol::initSymbol(cocos2d::Texture2D* _tex, float _width, float _height, float _vline)
+{
+    Sprite* _sptSymbol = Sprite::createWithTexture(_tex);    
+    const Size _texsymbolsize =  _sptSymbol->getContentSize();    
+    
+    _sptSymbol->setScale( _width / _texsymbolsize.width, _height / _texsymbolsize.height ); 
+    _sptSymbol->retain();
+    
+    ////////        
+    RenderTexture* _renderTex = RenderTexture::create(_width, _height + abs(_vline));
+        
+    ////////
+    DrawNode* drawnode = DrawNode::create();        
+    ////
+    const float _R         = _height/2.0;  
+    
+    if( _vline > 0.1 )
+    {
+        _sptSymbol->setAnchorPoint(Vec2(0.0, 0.0));    
+        drawnode->drawSegment(Vec2(_R * 1, 0), Vec2(_R * 1, _vline), 0.5f, Color4F(0.0,0.0,0.0,1.0));
+    }
+    else if( _vline < -0.1 )
+    {
+        _sptSymbol->setAnchorPoint(Vec2(0.0, 1.0));
+        _sptSymbol->setPosition(Vec2(0.0, _height + abs(_vline) ));
+        
+        drawnode->drawSegment(Vec2(-_R * 1, _R * 2), Vec2(-_R * 1, _R * 2 -_vline), 0.5f, Color4F(0.0,0.0,0.0,1.0));        
+    }
+    
+    
+    ////
+    drawnode->setPosition(Vec2(_width/2.0, _height/2.0));
+    drawnode->setScaleY(_height/ _width);    
+    BlendFunc bl = {GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA};
+    drawnode->setBlendFunc(bl);
+       
+    ////////
+    _renderTex->begin();    
+    
+    _sptSymbol->visit();
+    
+    drawnode->visit();        
+        
+    CHECK_GL_ERROR_DEBUG();
+    
+    _renderTex->end();
+    
+    ////////
+    Texture2D* _texture = _renderTex->getSprite()->getTexture();
+    _texture->setAntiAliasTexParameters();
+    
+    m_baseTex = _texture;
+    
+    this->initWithTexture(_texture);
+    this->setFlipY(true);
+    
+    _renderTex->retain();
+
+    float _anchorY = (_vline>=0.0)? (_height/2.0)/(_height + _vline) : (_height/2.0 + abs(_vline))/(_height + abs(_vline));   
+    
+    this->setAnchorPoint(Vec2(1.0f, _anchorY));
+    this->setColor(Color3B(8,8,8));
+}
 
 ////////
 void staffSymbolLine::initSBLine(float _width, int _count)

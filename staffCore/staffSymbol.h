@@ -27,8 +27,9 @@ public:
 
     void initSymbol(float _width, float _height, bool _solid);    
     void initSymbol(float _width, float _height, bool _solid, float _vline);
+    void initSymbol(cocos2d::Texture2D* _tex, float _width, float _height, float _vline);
     
-    
+
 };
 
 class staffSymbolEx:
