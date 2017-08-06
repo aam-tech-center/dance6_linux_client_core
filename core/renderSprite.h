@@ -6,7 +6,7 @@
 
 /* 
  * File:   renderSprite.h
- * Author: meida
+ * Author: Jack.L
  *
  * Created on 2017年7月10日, 下午1:30
  */

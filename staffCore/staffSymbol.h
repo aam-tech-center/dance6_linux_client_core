@@ -25,9 +25,9 @@ public:
 
     CREATE_FUNC(staffSymbol);
 
-    void initSymbol(float _width, float _height, bool _solid);
-    
+    void initSymbol(float _width, float _height, bool _solid);    
     void initSymbol(float _width, float _height, bool _solid, float _vline);
+    
     
 };
 

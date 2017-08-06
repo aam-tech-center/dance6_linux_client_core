@@ -27,7 +27,8 @@ public:
 
     CREATE_FUNC(staffLine);
     
-    void initLine(int _width, int _height);
+    void initLine(float _width, float _height);
+    void initLine(cocos2d::Texture2D* _tex, float _height);
     
     float getTrackPositinY(float _index);
 

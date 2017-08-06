@@ -6,7 +6,7 @@
 
 /* 
  * File:   renderLayer.cpp
- * Author: root
+ * Author: Jack.L
  * 
  * Created on 2017年8月1日, 上午11:32
  */
@@ -69,10 +69,23 @@ void renderLayer::onDraw()
 {    
     CHECK_GL_ERROR_DEBUG();
 
-    Director::getInstance()->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    Director::getInstance()->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    //Director::getInstance()->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    //Director::getInstance()->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    
+    //Mat4 _mat = Mat4::ZERO;//Mat4::IDENTITY;
+    
+    
+    //Director::getInstance()->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _mat);
+    
     Director::getInstance()->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    Director::getInstance()->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    
+    Mat4  _mat = Mat4::IDENTITY;
+    //_mat.rotateZ(PI);
+    _mat.scale(0.5f);
+    
+    Director::getInstance()->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, _mat);
+    
+    //Director::getInstance()->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
 
     auto glProgram = m_program;
     glProgram->use();
@@ -118,7 +131,7 @@ void renderLayer::onDraw()
  
     ////////
     Director::getInstance()->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    Director::getInstance()->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    //Director::getInstance()->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
         
 }
 

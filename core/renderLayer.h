@@ -6,7 +6,7 @@
 
 /* 
  * File:   renderLayer.h
- * Author: root
+ * Author: Jack.L
  *
  * Created on 2017年8月1日, 上午11:32
  */
@@ -15,6 +15,9 @@
 #define RENDERLAYER_H
 
 #include "cocos2d.h"
+#ifndef PI
+#define PI 3.1415926535
+#endif
 
 class renderLayer:
 public cocos2d::Layer

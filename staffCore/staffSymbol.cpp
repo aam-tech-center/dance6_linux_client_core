@@ -74,6 +74,10 @@ void staffSymbol::initSymbol(float _width, float _height, bool _solid)
     
     this->setAnchorPoint(Vec2(1.0f, 0.5f));
     //this->setScale(0.5f);
+    
+    ////////
+    this->setColor(Color3B(8,8,8));
+
 
 }
 
@@ -147,6 +151,7 @@ void staffSymbol::initSymbol(float _width, float _height, bool _solid, float _vl
     float _anchorY = (_vline>=0.0)? (_height/2.0)/(_height + _vline) : (_height/2.0 + abs(_vline))/(_height + abs(_vline));   
     
     this->setAnchorPoint(Vec2(1.0f, _anchorY));
+    this->setColor(Color3B(8,8,8));
     
     //this->setScale(0.5f);
 }
