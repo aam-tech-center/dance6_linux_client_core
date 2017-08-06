@@ -1315,6 +1315,8 @@ m_noteNodeAlloc(1024)
             _tickIndex = _note->_start;
                 
             _midiNote = m_noteNodeAlloc.create();
+            memset( _midiNote, 0, sizeof(NOTE_NODE));
+            
             m_noteNodeArray.push_back( _midiNote );
                 
             _midiNoteIndex = 0;

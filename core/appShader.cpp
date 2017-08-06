@@ -37,7 +37,7 @@ void appShader::init()
     addProgram(EPT_SINGLE_COLOR, "sampler.vsh", "sampler.fsh");
     addProgram(EPT_BW_COLOR, "sampler.vsh", "bwColor.fsh");
     addProgram(EPT_TEXSCOMPLEX, "sampler.vsh", "texscomplex.fsh");  
-
+    addProgram(EPT_BLURNORMAL, "sampler.vsh", "blurNormal.fsh");
     
 }
 
