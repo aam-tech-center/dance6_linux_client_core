@@ -267,15 +267,27 @@ int takeReadByte(MIDI_BYTE _byte[4], int& _readcount)
 }
 
 ////////
-midiCore::midiCore() {
-     
+midiCore::midiCore():
+m_metaSpeedDefault(NULL),
+m_metaBeatDefault(NULL)        
+{     
     for( int i=0; i<MAX_MIDI_TRACK; i++ )
     {
         m_trackArray[i] = NULL;
     }
 }
 
-midiCore::~midiCore() {
+midiCore::~midiCore() 
+{
+    if( m_metaSpeedDefault )
+    {
+        delete[] m_metaSpeedDefault;
+    }
+    
+    if( m_metaBeatDefault )
+    {
+        delete[] m_metaBeatDefault;
+    }
 }
 
 struct MtrkHeader
@@ -984,9 +996,14 @@ void midiCore::processMeta(point_ctrl* _point, int _trackIndex, unsigned char _m
             
             DEBUG_REPORT("MIDI_META_SPEED"<<" v1:"<<(int)v1<<" v2:"<<(int)v2<<" v3:"<<(int)v3);
             
-            m_metaSpeedDefault[0] = v1;
-            m_metaSpeedDefault[1] = v2;
-            m_metaSpeedDefault[2] = v3;
+            if( m_metaSpeedDefault == NULL )
+            {
+                m_metaSpeedDefault = new int[3];
+                
+                m_metaSpeedDefault[0] = v1;
+                m_metaSpeedDefault[1] = v2;
+                m_metaSpeedDefault[2] = v3;                
+            }            
             
             break;
         }
@@ -1012,10 +1029,15 @@ void midiCore::processMeta(point_ctrl* _point, int _trackIndex, unsigned char _m
                     <<(int)bMetronomeTimer<<","
                     <<(int)bNb32ndNotesInCrotchet);
             
-            m_metaBeatDefault[0] = bBeatNumerator;
-            m_metaBeatDefault[1] = bBeatDenominator;
-            m_metaBeatDefault[2] = bMetronomeTimer;
-            m_metaBeatDefault[3] = bNb32ndNotesInCrotchet;
+            if( m_metaBeatDefault == NULL )
+            {
+                m_metaBeatDefault = new int[4];
+                
+                m_metaBeatDefault[0] = bBeatNumerator;
+                m_metaBeatDefault[1] = bBeatDenominator;
+                m_metaBeatDefault[2] = bMetronomeTimer;
+                m_metaBeatDefault[3] = bNb32ndNotesInCrotchet;
+            }            
             
             break;
         }

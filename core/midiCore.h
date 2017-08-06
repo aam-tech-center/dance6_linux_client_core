@@ -169,8 +169,8 @@ protected:
     unsigned short m_tracks;
     unsigned short m_tickcount;
     
-    int            m_metaSpeedDefault[3];
-    int            m_metaBeatDefault[4];
+    int*           m_metaSpeedDefault;
+    int*           m_metaBeatDefault;
     
     ifstream       m_file;
     
